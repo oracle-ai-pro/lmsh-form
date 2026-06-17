@@ -2,37 +2,51 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prestige HQ | Центр управления</title>
-    <link rel="stylesheet" href="style.css">
+    <title>LMSH Creator Forms</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,700,1,0" rel="stylesheet">
+    <style>
+        :root { --bg: #050505; --surface: #121212; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 24px; }
+        .container { max-width: 900px; margin: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .btn-create { background: var(--text); color: var(--bg); border: none; padding: 12px 24px; border-radius: 50px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .form-card { background: var(--surface); padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 700; cursor: pointer; }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>LMSH Creator Forms</h1>
+            <button class="btn-create" onclick="createNewForm()">
+                <span class="material-symbols-rounded">add</span> Создать форму
+            </button>
+        </header>
+        <div id="forms-list"></div>
+    </div>
 
-    <button id="openBtn">☰ Меню</button>
+    <script>
+        function createNewForm() {
+            const title = prompt("Введите имя формы:");
+            if (!title) return;
+            const id = 'form_' + Date.now();
+            const newForm = { id, title, fields: [] };
+            let forms = JSON.parse(localStorage.getItem('lmsh_forms') || '[]');
+            forms.push(newForm);
+            localStorage.setItem('lmsh_forms', JSON.stringify(forms));
+            window.location.href = `editor.html?id=${id}`;
+        }
 
-    <nav id="mySidebar" class="sidebar">
-        <div class="menu-item">
-            <button class="dropdown-btn">Prestige HQ Alpha ▾</button>
-            <div class="dropdown-content">
-                <a href="alpha-desc.html">📄 Описание</a>
-                <a href="alpha/index.html" target="_blank">🚀 Перейти</a>
-            </div>
-        </div>
-
-        <div class="menu-item">
-            <button class="dropdown-btn">Prestige HQ Beta ▾</button>
-            <div class="dropdown-content">
-                <a href="beta-desc.html">📄 Описание</a>
-                <a href="beta/index.html" target="_blank">🚀 Перейти</a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="content">
-        <h1>Добро пожаловать в Prestige HQ</h1>
-        <p>Центральный узел всех операций Штаба ЛМСХ.</p>
-    </main>
-
-    <script src="script.js"></script>
+        // Рендер списка
+        const list = document.getElementById('forms-list');
+        const forms = JSON.parse(localStorage.getItem('lmsh_forms') || '[]');
+        forms.forEach(f => {
+            list.innerHTML += `
+                <div class="form-card">
+                    <span>${f.title}</span>
+                    <span class="material-symbols-rounded" onclick="window.location.href='editor.html?id=${f.id}'">edit</span>
+                </div>`;
+        });
+    </script>
 </body>
 </html>
