@@ -1,26 +1,36 @@
-let currentForm = JSON.parse(localStorage.getItem('current_editing_form')) || { title: "Название", description: "", fields: [] };
+let currentForm = JSON.parse(localStorage.getItem('form_data')) || { 
+    title: "Название формы", 
+    description: "", 
+    fields: [] 
+};
 
 function save() {
-    localStorage.setItem('current_editing_form', JSON.stringify(currentForm));
-    alert("Форма сохранена!");
+    localStorage.setItem('form_data', JSON.stringify(currentForm));
+    alert("Сохранено!");
+}
+
+function add(type) {
+    currentForm.fields.push({ id: Date.now(), type, label: 'Новый вопрос' });
+    render('конструктор');
+}
+
+function removeField(id) {
+    currentForm.fields = currentForm.fields.filter(f => f.id !== id);
+    render('конструктор');
 }
 
 function render(view) {
     const app = document.getElementById('app');
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
     
-    if(view === 'builder') {
-        app.innerHTML = `<h3>Конструктор</h3>`; // Здесь будет логика отрисовки полей
-    } else if(view === 'settings') {
-        app.innerHTML = `
-            <h3>Настройки корпорации</h3>
-            <textarea oninput="currentForm.description = this.value">${currentForm.description}</textarea>
-        `;
+    if(view === 'конструктор') {
+        app.innerHTML = currentForm.fields.map((f, i) => `
+            <div class="field-card">
+                <input value="${f.label}" style="background:transparent; border:none; color:white; flex-grow:1" onchange="currentForm.fields[${i}].label = this.value">
+                <span class="material-symbols-rounded" style="cursor:pointer" onclick="removeField(${f.id})">delete</span>
+            </div>
+        `).join('');
+    } else if(view === 'настройки') {
+        app.innerHTML = `<h3>Настройки корпорации</h3><textarea oninput="currentForm.description = this.value">${currentForm.description}</textarea>`;
     }
-}
-
-function exportIframe() {
-    const code = `<iframe src="${window.location.href}" width="600" height="400"></iframe>`;
-    prompt("Скопируйте HTML код:", code);
 }
