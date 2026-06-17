@@ -1,0 +1,25 @@
+:root { --bg: #050505; --surface: #121212; --accent: #007aff; --text: #fff; }
+
+body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 70px; border-right: 1px solid #222; display: flex; flex-direction: column; align-items: center; gap: 25px; padding-top: 30px; }
+.icon-btn { cursor: pointer; color: #555; transition: 0.2s; }
+.icon-btn:hover { color: var(--accent); }
+
+/* Main */
+.main { flex-grow: 1; display: flex; flex-direction: column; }
+.header { display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; border-bottom: 1px solid #222; }
+
+/* Styling elements */
+.logo-mini { width: 40px; height: 20px; display: flex; gap: 4px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.blue { background: #007aff; box-shadow: 0 0 8px #007aff; }
+.purple { background: #bf5af2; box-shadow: 0 0 8px #bf5af2; }
+
+.tab { cursor: pointer; color: #888; padding-bottom: 5px; border-bottom: 2px solid transparent; }
+.tab.active { color: var(--text); border-bottom: 2px solid var(--accent); }
+
+textarea { width: 100%; height: 200px; background: #111; color: #fff; border: 1px solid #333; border-radius: 12px; padding: 15px; resize: none; outline: none; }
+
+.more-btn { cursor: pointer; color: #888; }
