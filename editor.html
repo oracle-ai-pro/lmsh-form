@@ -5,17 +5,16 @@
     <title>Редактор формы</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet">
     <style>
-        body { background: #050505; color: white; margin: 0; display: flex; height: 100vh; font-family: sans-serif; }
+        :root { --bg: #050505; --surface: #121212; --accent: #ffffff; --error: #ff5252; }
+        body { background: var(--bg); color: white; margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', sans-serif; }
         
-        /* Боковая панель */
-        .sidebar { width: 300px; background: #121212; padding: 20px; border-right: 1px solid #333; }
-        .sidebar h3 { font-size: 14px; color: #888; text-transform: uppercase; margin-top: 30px; }
-        .tool-btn { display: flex; align-items: center; gap: 10px; width: 100%; background: #1a1a1a; border: none; color: white; padding: 12px; margin: 5px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .tool-btn:hover { background: #333; }
-
-        /* Рабочая область */
-        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .sidebar { width: 300px; background: var(--surface); padding: 20px; border-right: 1px solid #333; display: flex; flex-direction: column; gap: 10px; }
+        .main { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        
+        .tab-btn { background: #1a1a1a; border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
         .field-card { background: #121212; padding: 20px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333; }
+        
+        .btn-danger { background: var(--error); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 700; }
     </style>
 </head>
@@ -23,56 +22,75 @@
 
     <div class="sidebar">
         <h2>Редактор</h2>
-        <h3>Элементы</h3>
-        <button class="tool-btn" onclick="addField('text')"><span class="material-symbols-rounded">text_fields</span> Текстовое поле</button>
-        <button class="tool-btn" onclick="addSection()"><span class="material-symbols-rounded">view_agenda</span> Добавить Раздел</button>
-        <button class="tool-btn" onclick="addField('image')"><span class="material-symbols-rounded">image</span> Загрузить Изображение</button>
-        <button class="tool-btn" onclick="addField('explanation')"><span class="material-symbols-rounded">info</span> Текст-объяснение</button>
+        <button class="tab-btn" onclick="showTab('builder')"><span class="material-symbols-rounded">edit</span> Конструктор</button>
+        <button class="tab-btn" onclick="showTab('settings')"><span class="material-symbols-rounded">settings</span> Настройки</button>
+        <hr style="width:100%; border:0; border-top:1px solid #333; margin: 20px 0;">
+        <button class="tab-btn" onclick="addField('text')"><span class="material-symbols-rounded">text_fields</span> Текст</button>
+        <button class="tab-btn" onclick="addSection()"><span class="material-symbols-rounded">view_agenda</span> Раздел</button>
     </div>
 
-    <div class="main-content">
-        <h1 id="form-title">Название</h1>
-        <div id="fields-area"></div>
+    <div class="main" id="app">
+        <h1 id="form-title">...</h1>
+        <div id="content"></div>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
+        const id = new URLSearchParams(window.location.search).get('id');
         let forms = JSON.parse(localStorage.getItem('lmsh_forms') || '[]');
         let currentForm = forms.find(f => f.id === id);
 
-        function render() {
-            const area = document.getElementById('fields-area');
-            area.innerHTML = '';
-            currentForm.fields.forEach((f, index) => {
-                area.innerHTML += `
+        function save() {
+            localStorage.setItem('lmsh_forms', JSON.stringify(forms));
+        }
+
+        function showTab(tab) {
+            const content = document.getElementById('content');
+            if(tab === 'builder') {
+                renderBuilder();
+            } else {
+                content.innerHTML = `
                     <div class="field-card">
-                        <strong>Тип: ${f.type}</strong>
-                        <p>${f.label || 'Новый элемент'}</p>
+                        <h3>Настройки формы</h3>
+                        <p>Опасная зона:</p>
+                        <button class="btn-danger" onclick="deleteForm()">Удалить форму (РИСК!)</button>
+                    </div>`;
+            }
+        }
+
+        function renderBuilder() {
+            const content = document.getElementById('content');
+            content.innerHTML = '';
+            currentForm.fields.forEach((f, i) => {
+                content.innerHTML += `
+                    <div class="field-card">
+                        <strong>${f.type.toUpperCase()}</strong>
+                        <p>${f.label}</p>
+                        <button onclick="removeField(${i})">Удалить</button>
                     </div>`;
             });
         }
 
         function addField(type) {
-            currentForm.fields.push({ type, label: 'Новое поле' });
-            saveAndRender();
+            currentForm.fields.push({ id: Date.now(), type, label: 'Новое поле' });
+            save(); renderBuilder();
         }
 
-        function addSection() {
-            currentForm.fields.push({ type: 'section', label: '--- Новый раздел ---' });
-            saveAndRender();
+        function removeField(index) {
+            currentForm.fields.splice(index, 1);
+            save(); renderBuilder();
         }
 
-        function saveAndRender() {
-            localStorage.setItem('lmsh_forms', JSON.stringify(forms));
-            render();
+        function deleteForm() {
+            if(confirm("ВНИМАНИЕ: Удалить форму навсегда?")) {
+                forms = forms.filter(f => f.id !== id);
+                save();
+                window.location.href = 'index.html';
+            }
         }
 
-        // Инициализация
-        if (currentForm) {
-            document.getElementById('form-title').innerText = currentForm.title;
-            render();
-        }
+        // Init
+        document.getElementById('form-title').innerText = currentForm.title;
+        showTab('builder');
     </script>
 </body>
 </html>
