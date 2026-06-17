@@ -1,96 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Редактор формы</title>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet">
-    <style>
-        :root { --bg: #050505; --surface: #121212; --accent: #ffffff; --error: #ff5252; }
-        body { background: var(--bg); color: white; margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', sans-serif; }
-        
-        .sidebar { width: 300px; background: var(--surface); padding: 20px; border-right: 1px solid #333; display: flex; flex-direction: column; gap: 10px; }
-        .main { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        
-        .tab-btn { background: #1a1a1a; border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .field-card { background: #121212; padding: 20px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333; }
-        
-        .btn-danger { background: var(--error); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 700; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:FILL@1" rel="stylesheet">
+    <link rel="stylesheet" href="style-editor.css">
 </head>
 <body>
-
     <div class="sidebar">
-        <h2>Редактор</h2>
-        <button class="tab-btn" onclick="showTab('builder')"><span class="material-symbols-rounded">edit</span> Конструктор</button>
-        <button class="tab-btn" onclick="showTab('settings')"><span class="material-symbols-rounded">settings</span> Настройки</button>
-        <hr style="width:100%; border:0; border-top:1px solid #333; margin: 20px 0;">
-        <button class="tab-btn" onclick="addField('text')"><span class="material-symbols-rounded">text_fields</span> Текст</button>
-        <button class="tab-btn" onclick="addSection()"><span class="material-symbols-rounded">view_agenda</span> Раздел</button>
+        <span class="material-symbols-rounded icon-btn" onclick="add('text')">text_fields</span>
+        <span class="material-symbols-rounded icon-btn" onclick="add('radio')">radio_button_checked</span>
+        <span class="material-symbols-rounded icon-btn" onclick="add('checkbox')">check_box</span>
+        <span class="material-symbols-rounded icon-btn" onclick="add('section')">splitscreen</span>
     </div>
 
-    <div class="main" id="app">
-        <h1 id="form-title">...</h1>
-        <div id="content"></div>
+    <div class="main">
+        <div class="header">
+            <div class="logo-mini"><div class="dot blue"></div><div class="dot purple"></div></div>
+            <h2 contenteditable="true" oninput="currentForm.title = this.innerText">${currentForm.title}</h2>
+            <div class="tabs">
+                <div class="tab active" onclick="render('builder')">Конструктор</div>
+                <div class="tab" onclick="render('responses')">Ответы</div>
+                <div class="tab" onclick="render('settings')">Настройки</div>
+            </div>
+            <button onclick="save()">Сохранить</button>
+            <span class="material-symbols-rounded more-btn" onclick="exportIframe()">more_vert</span>
+        </div>
+        <div class="content" id="app"></div>
     </div>
-
-    <script>
-        const id = new URLSearchParams(window.location.search).get('id');
-        let forms = JSON.parse(localStorage.getItem('lmsh_forms') || '[]');
-        let currentForm = forms.find(f => f.id === id);
-
-        function save() {
-            localStorage.setItem('lmsh_forms', JSON.stringify(forms));
-        }
-
-        function showTab(tab) {
-            const content = document.getElementById('content');
-            if(tab === 'builder') {
-                renderBuilder();
-            } else {
-                content.innerHTML = `
-                    <div class="field-card">
-                        <h3>Настройки формы</h3>
-                        <p>Опасная зона:</p>
-                        <button class="btn-danger" onclick="deleteForm()">Удалить форму (РИСК!)</button>
-                    </div>`;
-            }
-        }
-
-        function renderBuilder() {
-            const content = document.getElementById('content');
-            content.innerHTML = '';
-            currentForm.fields.forEach((f, i) => {
-                content.innerHTML += `
-                    <div class="field-card">
-                        <strong>${f.type.toUpperCase()}</strong>
-                        <p>${f.label}</p>
-                        <button onclick="removeField(${i})">Удалить</button>
-                    </div>`;
-            });
-        }
-
-        function addField(type) {
-            currentForm.fields.push({ id: Date.now(), type, label: 'Новое поле' });
-            save(); renderBuilder();
-        }
-
-        function removeField(index) {
-            currentForm.fields.splice(index, 1);
-            save(); renderBuilder();
-        }
-
-        function deleteForm() {
-            if(confirm("ВНИМАНИЕ: Удалить форму навсегда?")) {
-                forms = forms.filter(f => f.id !== id);
-                save();
-                window.location.href = 'index.html';
-            }
-        }
-
-        // Init
-        document.getElementById('form-title').innerText = currentForm.title;
-        showTab('builder');
-    </script>
+    <script src="script-editor.js"></script>
 </body>
 </html>
